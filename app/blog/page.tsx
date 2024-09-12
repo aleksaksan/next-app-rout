@@ -1,37 +1,33 @@
-import { Metadata } from "next";
-import Link from "next/link";
-
-const getData = async () => {
-  const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
-    next: {
-      revalidate: 60
-    }
-  });
-  return response.json();
-}
-
-interface IPost {
+'use client'
+import Posts from "@/components/Posts";
+import PostSearch from "@/components/PostSearch";
+import { getAllPosts } from "@/services/getPosts";
+import { useEffect, useState } from "react";
+export interface IPost {
   id: number;
   title: string;
 }
 
-export const metadata: Metadata = {
-  title: "Blog | Next App",
-  description: "blog page",
-};
+// export const metadata: Metadata = {
+//   title: "Blog | Next App",
+//   description: "blog page",
+// };
 
-const Blog = async () => {
-  const posts = await getData();
+export const Blog = () => {
+  const [posts, setPosts] = useState<IPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getAllPosts()
+      .then(setPosts)
+      .finally(() => setLoading(false));
+  }, [])
+
   return (
     <div className="page">
       <h1>Blog Page</h1>
-      <ul>
-        {posts.map((post: IPost) => (
-          <li key={post.id}>
-            <Link href={`/blog/${post.id}`}>{post.title}</Link>
-          </li>
-        ))}
-      </ul>
+      <PostSearch onSearch={setPosts} />
+      {loading ? <h3>Loading...</h3> : <Posts posts={posts} />}
     </div>
   );
 };
